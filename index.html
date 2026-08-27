@@ -6,12 +6,12 @@
   <title>MatchDay Dashboard</title>
   <style>
     :root {
-      --bg-color: #060e08;
-      --card-bg: #0d1810;
-      --border-color: #1a2b1f;
+      --bg-color: #080f0a;
+      --card-bg: #101c13;
+      --border-color: #1b2e20;
       --accent-color: #22c55e;
       --text-color: #ffffff;
-      --text-muted: #88998e;
+      --text-muted: #83988a;
     }
 
     * {
@@ -24,8 +24,8 @@
     body {
       background-color: var(--bg-color);
       color: var(--text-color);
-      padding: 24px;
-      max-width: 900px;
+      padding: 20px;
+      max-width: 800px;
       margin: 0 auto;
     }
 
@@ -38,6 +38,9 @@
       font-size: 1.5rem;
       font-weight: 800;
       letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .search-container {
@@ -48,7 +51,7 @@
 
     .search-container input {
       flex: 1;
-      background: #09140b;
+      background: #0d1710;
       border: 1px solid var(--border-color);
       padding: 14px 18px;
       border-radius: 12px;
@@ -81,7 +84,7 @@
       gap: 8px;
     }
 
-    /* Match Card Original Styling */
+    /* Match Cards */
     #matchesContainer {
       display: flex;
       flex-direction: column;
@@ -93,7 +96,7 @@
       background: var(--card-bg);
       border: 1px solid var(--border-color);
       border-radius: 20px;
-      padding: 28px 24px;
+      padding: 24px;
       text-align: center;
       position: relative;
     }
@@ -101,8 +104,8 @@
     .votes-badge {
       display: inline-block;
       background: rgba(34, 197, 94, 0.08);
-      color: #84cc16;
-      border: 1px solid #84cc16;
+      color: #a3e635;
+      border: 1px solid #a3e635;
       padding: 4px 14px;
       border-radius: 20px;
       font-size: 0.75rem;
@@ -117,14 +120,14 @@
       text-transform: uppercase;
       letter-spacing: 1.5px;
       font-weight: 700;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
     .match-main {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
     .team {
@@ -135,39 +138,38 @@
       gap: 12px;
     }
 
-    /* Grünes Schild-Icon aus Original-UI */
-    .shield-svg {
-      width: 42px;
-      height: 48px;
-      fill: none;
+    .team svg {
+      width: 48px;
+      height: 54px;
       stroke: var(--accent-color);
-      stroke-width: 2.5;
+      fill: none;
+      stroke-width: 2;
     }
 
     .team span {
       font-weight: 700;
-      font-size: 1.25rem;
+      font-size: 1.1rem;
       color: #fff;
     }
 
     .match-info h2 {
-      font-size: 2rem;
+      font-size: 2.2rem;
       font-weight: 900;
       color: #fff;
-      line-height: 1;
+      line-height: 1.1;
     }
 
     .match-info .sub-text {
       color: var(--text-muted);
       font-size: 0.9rem;
-      margin-top: 6px;
-      font-weight: 500;
+      margin-top: 4px;
+      font-weight: 600;
     }
 
     .match-info .location {
       color: var(--text-muted);
       font-size: 0.85rem;
-      margin-top: 8px;
+      margin-top: 6px;
     }
 
     /* Buttons */
@@ -178,7 +180,7 @@
     }
 
     .btn-action {
-      background: #142418;
+      background: #18281b;
       border: 1px solid var(--border-color);
       color: #fff;
       padding: 10px 22px;
@@ -193,7 +195,7 @@
     }
 
     .btn-action:hover {
-      background: #1c3322;
+      background: #203624;
     }
   </style>
 </head>
@@ -210,15 +212,53 @@
 
   <div class="section-title">⚡ Anstehende Matches</div>
   <div id="matchesContainer">
-    <p style="text-align:center; color: var(--text-muted); padding: 20px;">Lade Spiele...</p>
+    <!-- Platzhalter-Karte aus dem vorherigen Design -->
+    <div class="match-card">
+      <div class="votes-badge">🔥 0 VOTES</div>
+      <div class="league-name">AMATEURLIGA</div>
+      <div class="match-main">
+        <div class="team">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>Heimteam</span>
+        </div>
+        <div class="match-info">
+          <h2>15:00 Uhr</h2>
+          <p class="sub-text">Demnächst</p>
+          <p class="location">📍 Sportplatz</p>
+        </div>
+        <div class="team">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>Auswärtsteam</span>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn-action">👍 Upvote</button>
+        <button class="btn-action">🧩 Route</button>
+      </div>
+    </div>
   </div>
 
   <div class="section-title">📍 Spielstätten auf der Karte</div>
-  <!-- Platzhalter für Kartenbereich -->
-  <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; height: 200px; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
-    Karte wird nach dem Laden angezeigt
+  <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; height: 180px; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
+    Karte wird hier geladen
   </div>
 
-  <script src="app.js"></script>
+  <script>
+    // Trage hier deine Google Web App URL ein
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/library/d/1GQPDuBMAN82GhRSWMJovz8o-Rq0Dy39_LzZiBD20IGsLkh53Edtj8W05/5';
+
+    document.getElementById('searchForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const url = document.getElementById('searchInput').value;
+      
+      try {
+        await fetch(`${GOOGLE_SCRIPT_URL}?action=addFuPaMatch&url=${encodeURIComponent(url)}`, { mode: 'no-cors' });
+        alert("Link übermittelt!");
+        location.reload();
+      } catch(err) {
+        alert("Fehler beim Absenden!");
+      }
+    });
+  </script>
 </body>
 </html>
