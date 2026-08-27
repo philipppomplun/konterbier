@@ -6,12 +6,12 @@
   <title>MatchDay Dashboard</title>
   <style>
     :root {
-      --bg-color: #080f0a;
-      --card-bg: #101c13;
-      --border-color: #1b2e20;
+      --bg-color: #0b130e;
+      --card-bg: #121e16;
       --accent-color: #22c55e;
       --text-color: #ffffff;
-      --text-muted: #83988a;
+      --text-muted: #a3a3a3;
+      --border-color: #1f3325;
     }
 
     * {
@@ -25,77 +25,63 @@
       background-color: var(--bg-color);
       color: var(--text-color);
       padding: 20px;
-      max-width: 800px;
+      max-width: 900px;
       margin: 0 auto;
     }
 
-    /* Header & Suche */
-    header {
-      margin-bottom: 24px;
-    }
-
-    h1 {
+    header h1 {
       font-size: 1.5rem;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      margin-bottom: 20px;
     }
 
     .search-container {
       display: flex;
-      gap: 12px;
-      margin-bottom: 32px;
+      gap: 10px;
+      margin-bottom: 30px;
     }
 
     .search-container input {
       flex: 1;
-      background: #0d1710;
+      background: #080f0a;
       border: 1px solid var(--border-color);
       padding: 14px 18px;
-      border-radius: 12px;
+      border-radius: 10px;
       color: #fff;
       font-size: 0.95rem;
       outline: none;
-    }
-
-    .search-container input:focus {
-      border-color: var(--accent-color);
     }
 
     .search-container button {
       background: var(--accent-color);
       color: #000;
       border: none;
-      padding: 14px 28px;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 0.95rem;
+      padding: 14px 24px;
+      border-radius: 10px;
+      font-weight: bold;
       cursor: pointer;
     }
 
-    .section-title {
-      font-size: 1.15rem;
-      font-weight: 700;
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .search-container button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
 
-    /* Match Cards */
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-bottom: 16px;
+    }
+
     #matchesContainer {
       display: flex;
       flex-direction: column;
-      gap: 20px;
-      margin-bottom: 40px;
+      gap: 16px;
     }
 
     .match-card {
       background: var(--card-bg);
       border: 1px solid var(--border-color);
-      border-radius: 20px;
+      border-radius: 16px;
       padding: 24px;
       text-align: center;
       position: relative;
@@ -103,14 +89,13 @@
 
     .votes-badge {
       display: inline-block;
-      background: rgba(34, 197, 94, 0.08);
-      color: #a3e635;
-      border: 1px solid #a3e635;
-      padding: 4px 14px;
+      background: rgba(34, 197, 94, 0.1);
+      color: var(--accent-color);
+      border: 1px solid var(--accent-color);
+      padding: 4px 12px;
       border-radius: 20px;
       font-size: 0.75rem;
-      font-weight: 800;
-      letter-spacing: 0.5px;
+      font-weight: bold;
       margin-bottom: 12px;
     }
 
@@ -118,8 +103,7 @@
       color: var(--text-muted);
       font-size: 0.8rem;
       text-transform: uppercase;
-      letter-spacing: 1.5px;
-      font-weight: 700;
+      letter-spacing: 1px;
       margin-bottom: 20px;
     }
 
@@ -135,44 +119,29 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
 
-    .team svg {
-      width: 48px;
-      height: 54px;
-      stroke: var(--accent-color);
-      fill: none;
-      stroke-width: 2;
+    .shield-icon {
+      font-size: 2.5rem;
     }
 
     .team span {
-      font-weight: 700;
+      font-weight: bold;
       font-size: 1.1rem;
-      color: #fff;
     }
 
     .match-info h2 {
-      font-size: 2.2rem;
-      font-weight: 900;
-      color: #fff;
-      line-height: 1.1;
+      font-size: 1.8rem;
+      font-weight: 800;
     }
 
-    .match-info .sub-text {
+    .match-info p {
       color: var(--text-muted);
       font-size: 0.9rem;
       margin-top: 4px;
-      font-weight: 600;
     }
 
-    .match-info .location {
-      color: var(--text-muted);
-      font-size: 0.85rem;
-      margin-top: 6px;
-    }
-
-    /* Buttons */
     .actions {
       display: flex;
       justify-content: center;
@@ -180,22 +149,15 @@
     }
 
     .btn-action {
-      background: #18281b;
+      background: #1a2b20;
       border: 1px solid var(--border-color);
       color: #fff;
-      padding: 10px 22px;
+      padding: 10px 20px;
       border-radius: 20px;
       cursor: pointer;
       text-decoration: none;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .btn-action:hover {
-      background: #203624;
     }
   </style>
 </head>
@@ -207,58 +169,165 @@
 
   <form id="searchForm" class="search-container">
     <input type="url" id="searchInput" placeholder="FuPa Spiel-Link einfügen..." required>
-    <button type="submit">Laden</button>
+    <button type="submit" id="submitBtn">Laden</button>
   </form>
 
   <div class="section-title">⚡ Anstehende Matches</div>
   <div id="matchesContainer">
-    <!-- Platzhalter-Karte aus dem vorherigen Design -->
-    <div class="match-card">
-      <div class="votes-badge">🔥 0 VOTES</div>
-      <div class="league-name">AMATEURLIGA</div>
-      <div class="match-main">
-        <div class="team">
-          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          <span>Heimteam</span>
-        </div>
-        <div class="match-info">
-          <h2>15:00 Uhr</h2>
-          <p class="sub-text">Demnächst</p>
-          <p class="location">📍 Sportplatz</p>
-        </div>
-        <div class="team">
-          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          <span>Auswärtsteam</span>
-        </div>
-      </div>
-      <div class="actions">
-        <button class="btn-action">👍 Upvote</button>
-        <button class="btn-action">🧩 Route</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="section-title">📍 Spielstätten auf der Karte</div>
-  <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; height: 180px; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
-    Karte wird hier geladen
+    <p style="text-align:center; color: var(--text-muted);">Lade Spiele...</p>
   </div>
 
   <script>
-    // Trage hier deine Google Web App URL ein
-    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/library/d/1GQPDuBMAN82GhRSWMJovz8o-Rq0Dy39_LzZiBD20IGsLkh53Edtj8W05/5';
+    const GOOGLE_SCRIPT_URL = 'DEINE_GOOGLE_APPS_SCRIPT_URL';
 
-    document.getElementById('searchForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const url = document.getElementById('searchInput').value;
-      
-      try {
-        await fetch(`${GOOGLE_SCRIPT_URL}?action=addFuPaMatch&url=${encodeURIComponent(url)}`, { mode: 'no-cors' });
-        alert("Link übermittelt!");
-        location.reload();
-      } catch(err) {
-        alert("Fehler beim Absenden!");
-      }
+    document.addEventListener('DOMContentLoaded', () => {
+      loadMatches();
+
+      document.getElementById('searchForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const urlInput = document.getElementById('searchInput');
+        const submitBtn = document.getElementById('submitBtn');
+        const url = urlInput.value.trim();
+
+        if (!url.includes('fupa.net')) {
+          alert('Bitte gib einen gültigen FuPa.net Link ein!');
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Lade...';
+
+        try {
+          const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+          const response = await fetch(proxyUrl);
+          const data = await response.json();
+          const html = data.contents;
+
+          let homeTeam = "Heimteam", awayTeam = "Auswärtsteam", league = "Amateurliga";
+          let dateText = "Demnächst", timeText = "15:00 Uhr", locationName = "Sportplatz";
+          let address = "", homeLogo = "", awayLogo = "", lat = 53.5511, lng = 9.9937;
+
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          const scripts = doc.querySelectorAll('script[type="application/ld+json"]');
+
+          scripts.forEach(script => {
+            try {
+              const matchData = JSON.parse(script.textContent);
+              if (matchData.homeTeam || matchData['@type'] === 'SportsEvent') {
+                if (matchData.homeTeam) homeTeam = matchData.homeTeam.name || homeTeam;
+                if (matchData.awayTeam) awayTeam = matchData.awayTeam.name || awayTeam;
+                if (matchData.homeTeam?.image) homeLogo = matchData.homeTeam.image;
+                if (matchData.awayTeam?.image) awayLogo = matchData.awayTeam.image;
+
+                if (matchData.location) {
+                  locationName = matchData.location.name || locationName;
+                  if (matchData.location.geo) {
+                    lat = parseFloat(matchData.location.geo.latitude) || lat;
+                    lng = parseFloat(matchData.location.geo.longitude) || lng;
+                  }
+                }
+                if (matchData.startDate) {
+                  const d = new Date(matchData.startDate);
+                  dateText = d.toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' });
+                  timeText = d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + " Uhr";
+                }
+              }
+            } catch (e) {}
+          });
+
+          if (homeTeam === "Heimteam") {
+            const title = doc.querySelector('title')?.textContent || '';
+            const parts = title.split(/ vs\.? | gegen | - | : /i);
+            if (parts.length >= 2) {
+              homeTeam = parts[0].trim();
+              awayTeam = parts[1].trim();
+            }
+          }
+
+          const payload = {
+            action: "addParsedMatch",
+            league, homeTeam, homeLogo, awayTeam, awayLogo,
+            timeText, dateText, locationName, address, lat, lng
+          };
+
+          await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          alert("Spiel erfolgreich hinzugefügt!");
+          urlInput.value = '';
+          loadMatches();
+
+        } catch (err) {
+          console.error(err);
+          alert("Fehler beim Auslesen des Links.");
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.innerText = 'Laden';
+        }
+      });
     });
+
+    async function loadMatches() {
+      const container = document.getElementById('matchesContainer');
+      try {
+        const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getMatches`);
+        const matches = await res.json();
+
+        if (!matches || matches.length === 0) {
+          container.innerHTML = '<p style="text-align:center; color: var(--text-muted);">Keine anstehenden Spiele gefunden.</p>';
+          return;
+        }
+
+        container.innerHTML = matches.map(m => `
+          <div class="match-card">
+            <div class="votes-badge">🔥 ${m.votes || 0} VOTES</div>
+            <div class="league-name">${m.league}</div>
+            <div class="match-main">
+              <div class="team">
+                ${m.homeLogo ? `<img src="${m.homeLogo}" style="width:40px;height:40px;object-fit:contain;">` : `<div class="shield-icon">🛡️</div>`}
+                <span>${m.homeTeam}</span>
+              </div>
+              <div class="match-info">
+                <h2>${m.timeText}</h2>
+                <p>${m.dateText}</p>
+                <p class="location">📍 ${m.locationName}</p>
+              </div>
+              <div class="team">
+                ${m.awayLogo ? `<img src="${m.awayLogo}" style="width:40px;height:40px;object-fit:contain;">` : `<div class="shield-icon">🛡️</div>`}
+                <span>${m.awayTeam}</span>
+              </div>
+            </div>
+            <div class="actions">
+              <button onclick="voteMatch('${m.id}', 'up')" class="btn-action">👍 Upvote</button>
+              <a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(m.locationName + ' ' + m.address)}" target="_blank" class="btn-action">🚴 Route</a>
+            </div>
+          </div>
+        `).join('');
+
+      } catch (err) {
+        console.error(err);
+        container.innerHTML = '<p style="text-align:center; color: var(--text-muted);">Konnte Spiele nicht laden.</p>';
+      }
+    }
+
+    async function voteMatch(id, type) {
+      try {
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, type })
+        });
+        setTimeout(loadMatches, 500);
+      } catch (err) {
+        console.error(err);
+      }
+    }
   </script>
 </body>
 </html>
