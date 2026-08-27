@@ -1,183 +1,510 @@
+
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MatchDay Dashboard</title>
-  <style>
-    :root {
-      --bg-color: #0b130e;
-      --card-bg: #121e16;
-      --accent-color: #22c55e;
-      --text-color: #ffffff;
-      --text-muted: #a3a3a3;
-      --border-color: #1f3325;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MatchDay • Dark Mode</title>
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
+    <!-- Leaflet Maps CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Google Font: Zalando Sans SemiExpanded -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Zalando+Sans+SemiExpanded:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    body {
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      padding: 20px;
-      max-width: 900px;
-      margin: 0 auto;
-    }
+    <style>
+        :root {
+            --bg-main: #0b110d;
+            --bg-card: rgba(23, 33, 26, 0.7);
+            --border-card: rgba(255, 255, 255, 0.08);
+            --accent-green: #22c55e;
+            --accent-lime: #ccff00;
+            --text-primary: #ffffff;
+            --text-muted: #8e9b90;
+            --glow-color: rgba(34, 197, 94, 0.25);
+            --radius-lg: 24px;
+            --radius-pill: 99px;
+        }
 
-    header h1 {
-      font-size: 1.5rem;
-      margin-bottom: 20px;
-    }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Zalando Sans SemiExpanded', sans-serif;
+        }
 
-    .search-container {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 30px;
-    }
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px 15px;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(34, 197, 94, 0.12), transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(204, 255, 0, 0.05), transparent 40%);
+        }
 
-    .search-container input {
-      flex: 1;
-      background: #080f0a;
-      border: 1px solid var(--border-color);
-      padding: 14px 18px;
-      border-radius: 10px;
-      color: #fff;
-      font-size: 0.95rem;
-      outline: none;
-    }
+        .app-shell {
+            width: 100%;
+            max-width: 900px;
+            background: #111a13;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 36px;
+            padding: 32px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
 
-    .search-container button {
-      background: var(--accent-color);
-      color: #000;
-      border: none;
-      padding: 14px 24px;
-      border-radius: 10px;
-      font-weight: bold;
-      cursor: pointer;
-    }
+        /* Header Desktop */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-    .search-container button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
 
-    .section-title {
-      font-size: 1.1rem;
-      font-weight: bold;
-      margin-bottom: 16px;
-    }
+        /* Teamgeist Logo Icon */
+        .teamgeist-logo {
+            width: 48px;
+            height: 48px;
+            min-width: 48px;
+            filter: drop-shadow(0 0 10px rgba(34, 197, 94, 0.3));
+        }
 
-    #matchesContainer {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
+        .greeting {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
 
-    .match-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 16px;
-      padding: 24px;
-      text-align: center;
-      position: relative;
-    }
+        .user-name {
+            font-size: 1.1rem;
+            font-weight: 800;
+        }
 
-    .votes-badge {
-      display: inline-block;
-      background: rgba(34, 197, 94, 0.1);
-      color: var(--accent-color);
-      border: 1px solid var(--accent-color);
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: bold;
-      margin-bottom: 12px;
-    }
+        .search-container {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-pill);
+            padding: 6px 6px 6px 16px;
+            width: 320px;
+        }
 
-    .league-name {
-      color: var(--text-muted);
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 20px;
-    }
+        .search-container input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #fff;
+            font-size: 0.85rem;
+            width: 100%;
+        }
 
-    .match-main {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
+        .search-container input::placeholder {
+            color: var(--text-muted);
+        }
 
-    .team {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-    }
+        .btn-load {
+            background: var(--accent-green);
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--radius-pill);
+            font-weight: 800;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
 
-    .shield-icon {
-      font-size: 2.5rem;
-    }
+        .btn-load:hover {
+            background: var(--accent-lime);
+        }
 
-    .team span {
-      font-weight: bold;
-      font-size: 1.1rem;
-    }
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+        }
 
-    .match-info h2 {
-      font-size: 1.8rem;
-      font-weight: 800;
-    }
+        .matches-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
 
-    .match-info p {
-      color: var(--text-muted);
-      font-size: 0.9rem;
-      margin-top: 4px;
-    }
+        /* Card Wrapper & Glow Effect */
+        .match-card-wrapper {
+            position: relative;
+        }
 
-    .actions {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-    }
+        .match-card-wrapper::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 50%, var(--glow-color), transparent 70%);
+            border-radius: var(--radius-lg);
+            z-index: 0;
+            opacity: 0.5;
+            transition: opacity 0.3s ease;
+        }
 
-    .btn-action {
-      background: #1a2b20;
-      border: 1px solid var(--border-color);
-      color: #fff;
-      padding: 10px 20px;
-      border-radius: 20px;
-      cursor: pointer;
-      text-decoration: none;
-      font-size: 0.85rem;
-      font-weight: 600;
-    }
-  </style>
+        .match-card-wrapper:hover::before {
+            opacity: 1;
+        }
+
+        .match-card {
+            position: relative;
+            z-index: 1;
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-lg);
+            padding: 24px 28px;
+            display: grid;
+            grid-template-columns: 1fr 220px 1fr;
+            align-items: center;
+            gap: 16px;
+        }
+
+        /* Status Badge */
+        .badge-vote-container {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+        }
+
+        .status-badge {
+            background: #17261c;
+            color: var(--accent-lime);
+            border: 1px solid rgba(204, 255, 0, 0.3);
+            padding: 4px 14px;
+            border-radius: var(--radius-pill);
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Team Section Desktop */
+        .team {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            width: 100%;
+        }
+
+        .team.home { 
+            justify-content: flex-end; 
+            text-align: right; 
+        }
+
+        .team.away { 
+            justify-content: flex-start; 
+            text-align: left; 
+        }
+
+        .team-name {
+            font-size: 1rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .team-logo {
+            width: 52px;
+            height: 52px;
+            min-width: 52px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+        }
+
+        /* Match Info Center */
+        .match-center {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            width: 100%;
+        }
+
+        .league-name {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 600;
+        }
+
+        .match-time {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .match-date {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .location-info {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+        }
+
+        /* Actions Area */
+        .card-actions {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
+            width: 100%;
+        }
+
+        .action-btn {
+            height: 38px;
+            border-radius: var(--radius-pill);
+            font-size: 0.78rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-decoration: none;
+            border: 1px solid var(--border-card);
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+            white-space: nowrap;
+        }
+
+        .btn-upvote {
+            width: 110px;
+        }
+
+        .btn-upvote:hover {
+            background: rgba(34, 197, 94, 0.15);
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+            transform: translateY(-1px);
+        }
+
+        .btn-upvote.voted {
+            background: var(--accent-green);
+            color: #000000;
+            border-color: var(--accent-green);
+            box-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
+        }
+
+        .btn-route {
+            width: 90px;
+            color: var(--text-muted);
+        }
+
+        .btn-route:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+        }
+
+        /* Map Section */
+        .map-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            backdrop-filter: blur(16px);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        #map {
+            width: 100%;
+            height: 260px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .leaflet-tile {
+            filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+        }
+
+        .leaflet-container {
+            background: #0d140e !important;
+        }
+
+        /* --- MOBILE OPTIMIERUNG --- */
+        @media (max-width: 768px) {
+            .app-shell {
+                padding: 20px 14px;
+            }
+
+            /* Header & Profil mittig */
+            .header { 
+                flex-direction: column; 
+                align-items: center; 
+                gap: 20px; 
+            }
+
+            .user-profile {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 8px;
+            }
+            
+            .search-container { 
+                width: 100%; 
+            }
+
+            /* 3 Spalten nebeneinander beibehalten */
+            .match-card { 
+                grid-template-columns: 1fr auto 1fr; 
+                gap: 8px; 
+                padding: 22px 12px 16px 12px;
+            }
+
+            /* Teams: Wappen OBERHALB des Vereinsnamens */
+            .team {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 8px;
+            }
+
+            .team.home, .team.away {
+                justify-content: flex-start;
+                text-align: center;
+            }
+
+            .team-logo {
+                width: 44px;
+                height: 44px;
+                min-width: 44px;
+            }
+
+            .team-name {
+                font-size: 0.82rem;
+                word-break: break-word;
+            }
+
+            .match-time {
+                font-size: 1.1rem;
+            }
+
+            .league-name {
+                font-size: 0.65rem;
+            }
+
+            .location-info {
+                max-width: 130px;
+                font-size: 0.7rem;
+            }
+
+            .card-actions {
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .action-btn {
+                height: 32px;
+                font-size: 0.72rem;
+            }
+
+            .btn-upvote, .btn-route {
+                width: 100%;
+                max-width: 95px;
+            }
+        }
+    </style>
 </head>
 <body>
 
-  <header>
-    <h1>⚡ MatchDay Dashboard</h1>
-  </header>
+    <div class="app-shell">
+        
+        <header class="header">
+            <div class="user-profile">
+                <!-- SVG Logo: Teamgeist WM 2006 Ball Design -->
+                <svg class="teamgeist-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Ball Basis -->
+                    <circle cx="50" cy="50" r="46" fill="#f8fafc" stroke="#111a13" stroke-width="2"/>
+                    
+                    <!-- Teamgeist charakteristische geschwungene Propeller-Panels (Schwarz mit Neongrün-Akzent) -->
+                    <path d="M 50,4 C 65,12 85,30 85,50 C 85,68 65,88 50,96 C 60,75 60,25 50,4 Z" fill="#111a13"/>
+                    <path d="M 50,4 C 65,12 85,30 85,50 C 85,68 65,88 50,96 C 60,75 60,25 50,4 Z" fill="none" stroke="#22c55e" stroke-width="2.5"/>
 
-  <form id="searchForm" class="search-container">
-    <input type="url" id="searchInput" placeholder="FuPa Spiel-Link einfügen..." required>
-    <button type="submit" id="submitBtn">Laden</button>
-  </form>
+                    <path d="M 50,4 C 35,12 15,30 15,50 C 15,68 35,88 50,96 C 40,75 40,25 50,4 Z" fill="#111a13"/>
+                    <path d="M 50,4 C 35,12 15,30 15,50 C 15,68 35,88 50,96 C 40,75 40,25 50,4 Z" fill="none" stroke="#22c55e" stroke-width="2.5"/>
 
-  <div class="section-title">⚡ Anstehende Matches</div>
-  <div id="matchesContainer">
-    <p style="text-align:center; color: var(--text-muted);">Lade Spiele...</p>
-  </div>
+                    <path d="M 4,50 C 12,35 30,15 50,15 C 68,15 88,35 96,50 C 75,40 25,40 4,50 Z" fill="#111a13"/>
+                    <path d="M 4,50 C 12,35 30,15 50,15 C 68,15 88,35 96,50 C 75,40 25,40 4,50 Z" fill="none" stroke="#22c55e" stroke-width="2.5"/>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+                    <path d="M 4,50 C 12,65 30,85 50,85 C 68,85 88,65 96,50 C 75,60 25,60 4,50 Z" fill="#111a13"/>
+                    <path d="M 4,50 C 12,65 30,85 50,85 C 68,85 88,65 96,50 C 75,60 25,60 4,50 Z" fill="none" stroke="#22c55e" stroke-width="2.5"/>
+
+                    <!-- Zierpunkte & Details -->
+                    <circle cx="50" cy="50" r="6" fill="#ccff00"/>
+                    <circle cx="50" cy="50" r="46" fill="none" stroke="#22c55e" stroke-width="3"/>
+                </svg>
+                
+                <div>
+                    <div class="greeting">Willkommen zurück 👋</div>
+                    <div class="user-name">MatchDay Dashboard</div>
+                </div>
+            </div>
+
+            <div class="search-container">
+                <input type="text" placeholder="FuPa Spiel-Link einfügen...">
+                <button class="btn-load">Laden</button>
+            </div>
+        </header>
+
+        <main style="display: flex; flex-direction: column; gap: 16px;">
+            <div class="section-header">
+                <h2 class="section-title">⚡ Anstehende Matches</h2>
+            </div>
+
+            <div class="matches-grid" id="matchesContainer">
+                <!-- Dynamisch generiert -->
+            </div>
+        </main>
+
+        <section class="map-section">
+            <div class="section-title" style="font-size: 0.95rem;">📍 Spielstätten auf der Karte</div>
+            <div id="map"></div>
+        </section>
+
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         // HIER DEINE GOOGLE APPS SCRIPT WEB-APP URL EINTRAGEN
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwcxoZ2EX6dRsg3SVE65dgCmp5y__ElJqAIb67QK3axDGcjUKVoaIJJMiJWNXHPKm_z/exec"; 
