@@ -368,34 +368,6 @@
         const fallbackLogo = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24' fill='none' stroke='%2322c55e' stroke-width='2'><path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/></svg>";
 
         let matches = [];
-        let map;
-        let markers = [];
-
-        function initMap() {
-            map = L.map('map', { zoomControl: false }).setView([53.5511, 9.9937], 11);
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '© OpenStreetMap'
-            }).addTo(map);
-        }
-
-        function updateMap() {
-            markers.forEach(m => map.removeLayer(m));
-            markers = [];
-            const bounds = [];
-
-            matches.forEach(m => {
-                if(m.lat && m.lng) {
-                    const marker = L.marker([m.lat, m.lng]).addTo(map);
-                    marker.bindPopup(`<b>${m.homeTeam} vs ${m.awayTeam}</b><br>${m.locationName}`);
-                    markers.push(marker);
-                    bounds.push([m.lat, m.lng]);
-                }
-            });
-
-            if(bounds.length > 0) map.fitBounds(bounds, { padding: [40, 40] });
-        }
 
         function renderMatches() {
             matches.sort((a, b) => b.votes - a.votes);
@@ -458,8 +430,6 @@
                 `;
                 container.appendChild(wrapper);
             });
-
-            updateMap();
         }
 
         async function fetchMatches() {
@@ -509,7 +479,6 @@
         }
 
         window.onload = () => {
-            initMap();
             if (SCRIPT_URL === "DEINE_WEB_APP_URL_HIER_EINTRAGEN") {
                 document.getElementById('matchesContainer').innerHTML = '<p style="color: #ff4444; text-align: center;">Bitte trage zuerst deine Google Apps Script URL im Code ein!</p>';
             } else {
