@@ -580,13 +580,14 @@
 
                         <div class="match-center">
                             <span class="league-name">${match.league}</span>
-                            <span class="match-time">${match.timeText}</span>
-                            <span class="match-date">${match.dateText}</span>
+                            <!-- HIER GEÄNDERT: Datum und CSS-Klassen getauscht -->
+                            <span class="match-time">${match.dateText}</span>
+                            <span class="match-date">${match.timeText}</span>
                             
                             <div class="location-info" title="${match.locationName}">
                                 <span>📍 ${match.locationName}</span>
                             </div>
-
+                        
                             <div class="card-actions">
                                 <button class="action-btn btn-upvote ${match.userVoted ? 'voted' : ''}" onclick="toggleVote('${match.id}')">
                                     👍 <span>${match.userVoted ? 'Gevotet' : 'Upvote'}</span>
