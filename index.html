@@ -1,676 +1,207 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MatchDay • Dark Mode</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MatchDay Dashboard</title>
+  <style>
+    :root {
+      --bg-color: #0b130e;
+      --card-bg: #121e16;
+      --accent-color: #22c55e;
+      --text-color: #ffffff;
+      --text-muted: #a3a3a3;
+      --border-color: #1f3325;
+    }
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Zalando+Sans+SemiExpanded:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
 
-    <style>
-        :root {
-            --bg-main: #0b110d;
-            --bg-card: rgba(23, 33, 26, 0.7);
-            --border-card: rgba(255, 255, 255, 0.08);
-            --accent-green: #22c55e;
-            --accent-lime: #ccff00;
-            --text-primary: #ffffff;
-            --text-muted: #8e9b90;
-            --glow-color: rgba(34, 197, 94, 0.25);
-            --radius-lg: 24px;
-            --radius-pill: 99px;
-        }
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Zalando Sans SemiExpanded', sans-serif;
-        }
+    header {
+      margin-bottom: 24px;
+    }
 
-        body {
-            background-color: var(--bg-main);
-            color: var(--text-primary);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 30px 15px;
-            background-image: 
-                radial-gradient(circle at 50% 0%, rgba(34, 197, 94, 0.12), transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(204, 255, 0, 0.05), transparent 40%);
-        }
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-        .app-shell {
-            width: 100%;
-            max-width: 900px;
-            background: #111a13;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 36px;
-            padding: 32px;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
-            display: flex;
-            flex-direction: column;
-            gap: 28px;
-        }
+    /* Suchleiste */
+    .search-container {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
 
-        /* Header Desktop */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    .search-container input {
+      flex: 1;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      padding: 12px 16px;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 0.95rem;
+      outline: none;
+    }
 
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
+    .search-container input:focus {
+      border-color: var(--accent-color);
+    }
 
-        /* Teamgeist Logo Image */
-        .app-logo {
-            width: 52px;
-            height: 52px;
-            min-width: 52px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid var(--accent-green);
-            box-shadow: 0 0 12px rgba(34, 197, 94, 0.35);
-        }
+    .search-container button {
+      background: var(--accent-color);
+      color: #000;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
 
-        .greeting {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-        }
+    .search-container button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
 
-        .user-name {
-            font-size: 1.1rem;
-            font-weight: 800;
-        }
+    /* Match Cards */
+    .section-title {
+      font-size: 1.1rem;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-        .search-container {
-            display: flex;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid var(--border-card);
-            border-radius: var(--radius-pill);
-            padding: 6px 6px 6px 16px;
-            width: 320px;
-        }
+    #matchesContainer {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
 
-        .search-container input {
-            background: transparent;
-            border: none;
-            outline: none;
-            color: #fff;
-            font-size: 0.85rem;
-            width: 100%;
-        }
+    .match-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      position: relative;
+      text-align: center;
+    }
 
-        .search-container input::placeholder {
-            color: var(--text-muted);
-        }
+    .votes-badge {
+      display: inline-block;
+      background: rgba(34, 197, 94, 0.1);
+      color: var(--accent-color);
+      border: 1px solid var(--accent-color);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
 
-        .btn-load {
-            background: var(--accent-green);
-            color: #000;
-            border: none;
-            padding: 8px 16px;
-            border-radius: var(--radius-pill);
-            font-weight: 800;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
+    .league-name {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+    }
 
-        .btn-load:hover {
-            background: var(--accent-lime);
-        }
+    .match-main {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
 
-        .section-title {
-            font-size: 1.1rem;
-            font-weight: 800;
-        }
+    .team {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
 
-        .matches-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
+    .team img {
+      width: 48px;
+      height: 48px;
+      object-fit: contain;
+    }
 
-        /* Card Wrapper & Glow Effect */
-        .match-card-wrapper {
-            position: relative;
-        }
+    .team span {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
 
-        .match-card-wrapper::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(circle at 50% 50%, var(--glow-color), transparent 70%);
-            border-radius: var(--radius-lg);
-            z-index: 0;
-            opacity: 0.5;
-            transition: opacity 0.3s ease;
-        }
+    .match-info h2 {
+      font-size: 1.4rem;
+      color: #fff;
+    }
 
-        .match-card-wrapper:hover::before {
-            opacity: 1;
-        }
+    .match-info p {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-top: 4px;
+    }
 
-        .match-card {
-            position: relative;
-            z-index: 1;
-            background: var(--bg-card);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--border-card);
-            border-radius: var(--radius-lg);
-            padding: 24px 28px;
-            display: grid;
-            grid-template-columns: 1fr 220px 1fr;
-            align-items: center;
-            gap: 16px;
-        }
+    .actions {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+    }
 
-        /* Status Badge */
-        .badge-vote-container {
-            position: absolute;
-            top: -12px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 2;
-        }
+    .btn-vote {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
 
-        .status-badge {
-            background: #17261c;
-            color: var(--accent-lime);
-            border: 1px solid rgba(204, 255, 0, 0.3);
-            padding: 4px 14px;
-            border-radius: var(--radius-pill);
-            font-size: 0.7rem;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        /* Team Section Desktop */
-        .team {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            width: 100%;
-        }
-
-        .team.home { 
-            justify-content: flex-end; 
-            text-align: right; 
-        }
-
-        .team.away { 
-            justify-content: flex-start; 
-            text-align: left; 
-        }
-
-        .team-name {
-            font-size: 1rem;
-            font-weight: 700;
-            line-height: 1.2;
-        }
-
-        .team-logo {
-            width: 52px;
-            height: 52px;
-            min-width: 52px;
-            object-fit: contain;
-            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
-        }
-
-        /* Match Info Center */
-        .match-center {
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-            width: 100%;
-        }
-
-        .league-name {
-            font-size: 0.72rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            font-weight: 600;
-        }
-
-        .match-time {
-            font-size: 1.3rem;
-            font-weight: 800;
-            color: var(--text-primary);
-        }
-
-        .match-date {
-            font-size: 0.78rem;
-            color: var(--text-muted);
-            font-weight: 600;
-        }
-
-        .location-info {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-top: 2px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 200px;
-        }
-
-        /* Actions Area */
-        .card-actions {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-top: 8px;
-            width: 100%;
-        }
-
-        .action-btn {
-            height: 38px;
-            border-radius: var(--radius-pill);
-            font-size: 0.78rem;
-            font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            text-decoration: none;
-            border: 1px solid var(--border-card);
-            background: rgba(255, 255, 255, 0.06);
-            color: var(--text-primary);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-sizing: border-box;
-            white-space: nowrap;
-        }
-
-        .btn-upvote {
-            width: 110px;
-        }
-
-        .btn-upvote:hover {
-            background: rgba(34, 197, 94, 0.15);
-            border-color: var(--accent-green);
-            color: var(--accent-green);
-            transform: translateY(-1px);
-        }
-
-        .btn-upvote.voted {
-            background: var(--accent-green);
-            color: #000000;
-            border-color: var(--accent-green);
-            box-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
-        }
-
-        .btn-route {
-            width: 90px;
-            color: var(--text-muted);
-        }
-
-        .btn-route:hover {
-            background: rgba(255, 255, 255, 0.12);
-            color: #ffffff;
-            border-color: rgba(255, 255, 255, 0.25);
-            transform: translateY(-1px);
-        }
-
-        /* Map Section */
-        .map-section {
-            background: var(--bg-card);
-            border: 1px solid var(--border-card);
-            border-radius: var(--radius-lg);
-            padding: 20px;
-            backdrop-filter: blur(16px);
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        #map {
-            width: 100%;
-            height: 260px;
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .leaflet-tile {
-            filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
-        }
-
-        .leaflet-container {
-            background: #0d140e !important;
-        }
-
-        /* --- MOBILE OPTIMIERUNG --- */
-        @media (max-width: 768px) {
-            .app-shell {
-                padding: 20px 14px;
-            }
-
-            .header { 
-                flex-direction: column; 
-                align-items: center; 
-                gap: 20px; 
-            }
-
-            .user-profile {
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-                gap: 8px;
-            }
-            
-            .search-container { 
-                width: 100%; 
-            }
-
-            .match-card { 
-                grid-template-columns: 1fr auto 1fr; 
-                gap: 8px; 
-                padding: 22px 12px 16px 12px;
-            }
-
-            .team {
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-                gap: 8px;
-            }
-
-            .team.home, .team.away {
-                justify-content: flex-start;
-                text-align: center;
-            }
-
-            .team-logo {
-                width: 44px;
-                height: 44px;
-                min-width: 44px;
-            }
-
-            .team-name {
-                font-size: 0.82rem;
-                word-break: break-word;
-            }
-
-            .match-time {
-                font-size: 1.1rem;
-            }
-
-            .league-name {
-                font-size: 0.65rem;
-            }
-
-            .location-info {
-                max-width: 130px;
-                font-size: 0.7rem;
-            }
-
-            .card-actions {
-                flex-direction: column;
-                gap: 6px;
-            }
-
-            .action-btn {
-                height: 32px;
-                font-size: 0.72rem;
-            }
-
-            .btn-upvote, .btn-route {
-                width: 100%;
-                max-width: 95px;
-            }
-        }
-    </style>
+    .btn-vote:hover {
+      background: var(--border-color);
+    }
+  </style>
 </head>
 <body>
 
-    <div class="app-shell">
-        
-        <header class="header">
-            <div class="user-profile">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRHbvlpFEbDqHpDhqOwRa1iqKKGfr90WsGqEPH665E9Jw&s=10" class="app-logo" alt="Teamgeist WM 2006 Logo">
-                
-                <div>
-                    <div class="greeting">Willkommen zurück 👋</div>
-                    <div class="user-name">MatchDay Dashboard</div>
-                </div>
-            </div>
+  <header>
+    <h1>⚡ MatchDay Dashboard</h1>
+  </header>
 
-            <div class="search-container">
-                <input type="text" id="fupaUrlInput" placeholder="FuPa Spiel-Link einfügen...">
-                <button class="btn-load" onclick="addMatchFromFuPa()">Laden</button>
-            </div>
-        </header>
+  <!-- Formular für FuPa-Link -->
+  <form id="searchForm" class="search-container">
+    <input type="url" id="searchInput" placeholder="FuPa Spiel-Link einfügen..." required>
+    <button type="submit">Laden</button>
+  </form>
 
-        <main style="display: flex; flex-direction: column; gap: 16px;">
-            <div class="section-header">
-                <h2 class="section-title">⚡ Anstehende Matches</h2>
-            </div>
+  <!-- Container für anstehende Matches -->
+  <div class="section-title">⚡ Anstehende Matches</div>
+  <div id="matchesContainer">
+    <p style="text-align:center; color: var(--text-muted);">Lade Spiele...</p>
+  </div>
 
-            <div class="matches-grid" id="matchesContainer">
-                <div style="text-align:center; padding: 20px; color: var(--text-muted);">Matches werden geladen...</div>
-            </div>
-        </main>
-
-        <section class="map-section">
-            <div class="section-title" style="font-size: 0.95rem;">📍 Spielstätten auf der Karte</div>
-            <div id="map"></div>
-        </section>
-
-    </div>
-
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwcxoZ2EX6dRsg3SVE65dgCmp5y__ElJqAIb67QK3axDGcjUKVoaIJJMiJWNXHPKm_z/exec";
-        const fallbackLogo = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24' fill='none' stroke='%2322c55e' stroke-width='2'><path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/></svg>";
-
-        let matches = [];
-        let map;
-        let markers = [];
-
-        // Geleistete Votes aus localStorage abrufen
-        function getVotedMatchesFromStorage() {
-            return JSON.parse(localStorage.getItem('votedMatches') || '[]');
-        }
-
-        // Match-ID in localStorage speichern/entfernen
-        function setVotedMatchStorage(id, isVoted) {
-            let voted = getVotedMatchesFromStorage();
-            if(isVoted && !voted.includes(id)) {
-                voted.push(id);
-            } else if(!isVoted) {
-                voted = voted.filter(item => item !== id);
-            }
-            localStorage.setItem('votedMatches', JSON.stringify(voted));
-        }
-
-        // 1. Daten aus Google Sheet abrufen
-        async function fetchMatches() {
-            try {
-                const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=getMatches`);
-                const data = await response.json();
-                
-                const votedList = getVotedMatchesFromStorage();
-                matches = data.map(m => ({
-                    ...m,
-                    votes: parseInt(m.votes || 0),
-                    lat: parseFloat(m.lat || 0),
-                    lng: parseFloat(m.lng || 0),
-                    userVoted: votedList.includes(String(m.id))
-                }));
-                
-                renderMatches();
-            } catch (err) {
-                console.error("Fehler beim Laden der Daten aus Google Sheet:", err);
-            }
-        }
-
-        // 2. Map Initialisierung
-        function initMap() {
-            map = L.map('map', { zoomControl: false }).setView([53.5511, 9.9937], 11);
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '© OpenStreetMap'
-            }).addTo(map);
-
-            updateMap();
-        }
-
-        function updateMap() {
-            if(!map) return;
-            markers.forEach(m => map.removeLayer(m));
-            markers = [];
-            const bounds = [];
-
-            matches.forEach(m => {
-                if(m.lat && m.lng) {
-                    const marker = L.marker([m.lat, m.lng]).addTo(map);
-                    marker.bindPopup(`<b>${m.homeTeam} vs ${m.awayTeam}</b><br>${m.locationName}`);
-                    markers.push(marker);
-                    bounds.push([m.lat, m.lng]);
-                }
-            });
-
-            if(bounds.length > 0) map.fitBounds(bounds, { padding: [40, 40] });
-        }
-
-        // 3. Interface Rendering
-        function renderMatches() {
-            matches.sort((a, b) => b.votes - a.votes);
-
-            const container = document.getElementById('matchesContainer');
-            container.innerHTML = '';
-
-            if (matches.length === 0) {
-                container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted);">Keine Spiele gefunden.</div>`;
-                return;
-            }
-
-            matches.forEach(match => {
-                const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(match.address || match.locationName)}`;
-
-                const wrapper = document.createElement('div');
-                wrapper.className = 'match-card-wrapper';
-
-                wrapper.innerHTML = `
-                    <div class="badge-vote-container">
-                        <div class="status-badge">
-                            🔥 ${match.votes} VOTES
-                        </div>
-                    </div>
-
-                    <div class="match-card">
-                        <div class="team home">
-                            <img src="${match.homeLogo || fallbackLogo}" class="team-logo" referrerpolicy="no-referrer">
-                            <span class="team-name">${match.homeTeam}</span>
-                        </div>
-
-                        <div class="match-center">
-                            <span class="league-name">${match.league}</span>
-                            <span class="match-time">${match.timeText}</span>
-                            <span class="match-date">${match.dateText}</span>
-                            
-                            <div class="location-info">
-                                <span>📍 ${match.locationName}</span>
-                            </div>
-
-                            <div class="card-actions">
-                                <button class="action-btn btn-upvote ${match.userVoted ? 'voted' : ''}" onclick="toggleVote('${match.id}')">
-                                    👍 <span>${match.userVoted ? 'Gevotet' : 'Upvote'}</span>
-                                </button>
-                                <a href="${googleMapsUrl}" target="_blank" class="action-btn btn-route">
-                                    🧭 <span>Route</span>
-                                </a>
-                            </div>
-                        </div>
-
-                        <div class="team away">
-                            <img src="${match.awayLogo || fallbackLogo}" class="team-logo" referrerpolicy="no-referrer">
-                            <span class="team-name">${match.awayTeam}</span>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(wrapper);
-            });
-
-            updateMap();
-        }
-
-        // 4. Vote in Google Sheet speichern
-        async function toggleVote(id) {
-            const match = matches.find(m => String(m.id) === String(id));
-            if(!match) return;
-
-            const nextState = !match.userVoted;
-            const type = nextState ? 'up' : 'down';
-            
-            // UI sofort optimistisch aktualisieren
-            match.userVoted = nextState;
-            match.votes += (nextState ? 1 : -1);
-            setVotedMatchStorage(String(id), nextState);
-            renderMatches();
-
-            // HTTP-POST an Google Apps Script senden
-            try {
-                await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: String(id), type: type })
-                });
-            } catch(e) {
-                console.error("Vote konnte nicht synchronisiert werden", e);
-            }
-        }
-
-        // 5. FuPa-Link verarbeiten
-        async function addMatchFromFuPa() {
-            const input = document.getElementById('fupaUrlInput');
-            const url = input.value.trim();
-            if(!url) return;
-
-            const btn = document.querySelector('.btn-load');
-            btn.innerText = "Lade...";
-            btn.disabled = true;
-
-            try {
-                await fetch(`${GOOGLE_SCRIPT_URL}?action=addFuPaMatch&url=${encodeURIComponent(url)}`);
-                input.value = '';
-                await fetchMatches();
-            } catch(e) {
-                console.error("Fehler beim Hinzufügen des Links", e);
-            } finally {
-                btn.innerText = "Laden";
-                btn.disabled = false;
-            }
-        }
-
-        window.onload = () => {
-            initMap();
-            fetchMatches();
-        };
-    </script>
+  <!-- JavaScript Datei einbinden -->
+  <script src="app.js"></script>
 </body>
 </html>
