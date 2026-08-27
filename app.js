@@ -1,5 +1,5 @@
 // Hier deine finale Google Apps Script Web-App URL eintragen:
-const GOOGLE_SCRIPT_URL = https://script.google.com/macros/s/AKfycbwcxoZ2EX6dRsg3SVE65dgCmp5y__ElJqAIb67QK3axDGcjUKVoaIJJMiJWNXHPKm_z/exec;
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwcxoZ2EX6dRsg3SVE65dgCmp5y__ElJqAIb67QK3axDGcjUKVoaIJJMiJWNXHPKm_z/exec';
 
 document.addEventListener('DOMContentLoaded', () => {
   loadMatches();
