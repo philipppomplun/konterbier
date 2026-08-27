@@ -177,157 +177,192 @@
     <p style="text-align:center; color: var(--text-muted);">Lade Spiele...</p>
   </div>
 
-  <script>
-    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/library/d/1GQPDuBMAN82GhRSWMJovz8o-Rq0Dy39_LzZiBD20IGsLkh53Edtj8W05/5';
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // HIER DEINE GOOGLE APPS SCRIPT WEB-APP URL EINTRAGEN
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwcxoZ2EX6dRsg3SVE65dgCmp5y__ElJqAIb67QK3axDGcjUKVoaIJJMiJWNXHPKm_z/exec"; 
+        
+        const fallbackLogo = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24' fill='none' stroke='%2322c55e' stroke-width='2'><path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/></svg>";
 
-    document.addEventListener('DOMContentLoaded', () => {
-      loadMatches();
+        let matches = [];
+        let map;
+        let markers = [];
 
-      document.getElementById('searchForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const urlInput = document.getElementById('searchInput');
-        const submitBtn = document.getElementById('submitBtn');
-        const url = urlInput.value.trim();
+        // UI Elemente
+        const loadBtn = document.querySelector('.btn-load');
+        const searchInput = document.querySelector('.search-container input');
 
-        if (!url.includes('fupa.net')) {
-          alert('Bitte gib einen gültigen FuPa.net Link ein!');
-          return;
+        function initMap() {
+            map = L.map('map', { zoomControl: false }).setView([53.5511, 9.9937], 11);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
         }
 
-        submitBtn.disabled = true;
-        submitBtn.innerText = 'Lade...';
+        function updateMap() {
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+            const bounds = [];
 
-        try {
-          const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-          const response = await fetch(proxyUrl);
-          const data = await response.json();
-          const html = data.contents;
-
-          let homeTeam = "Heimteam", awayTeam = "Auswärtsteam", league = "Amateurliga";
-          let dateText = "Demnächst", timeText = "15:00 Uhr", locationName = "Sportplatz";
-          let address = "", homeLogo = "", awayLogo = "", lat = 53.5511, lng = 9.9937;
-
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(html, 'text/html');
-          const scripts = doc.querySelectorAll('script[type="application/ld+json"]');
-
-          scripts.forEach(script => {
-            try {
-              const matchData = JSON.parse(script.textContent);
-              if (matchData.homeTeam || matchData['@type'] === 'SportsEvent') {
-                if (matchData.homeTeam) homeTeam = matchData.homeTeam.name || homeTeam;
-                if (matchData.awayTeam) awayTeam = matchData.awayTeam.name || awayTeam;
-                if (matchData.homeTeam?.image) homeLogo = matchData.homeTeam.image;
-                if (matchData.awayTeam?.image) awayLogo = matchData.awayTeam.image;
-
-                if (matchData.location) {
-                  locationName = matchData.location.name || locationName;
-                  if (matchData.location.geo) {
-                    lat = parseFloat(matchData.location.geo.latitude) || lat;
-                    lng = parseFloat(matchData.location.geo.longitude) || lng;
-                  }
+            matches.forEach(m => {
+                if(m.lat && m.lng) {
+                    const marker = L.marker([m.lat, m.lng]).addTo(map);
+                    marker.bindPopup(`<b>${m.homeTeam} vs ${m.awayTeam}</b><br>${m.locationName}`);
+                    markers.push(marker);
+                    bounds.push([m.lat, m.lng]);
                 }
-                if (matchData.startDate) {
-                  const d = new Date(matchData.startDate);
-                  dateText = d.toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' });
-                  timeText = d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + " Uhr";
-                }
-              }
-            } catch (e) {}
-          });
+            });
 
-          if (homeTeam === "Heimteam") {
-            const title = doc.querySelector('title')?.textContent || '';
-            const parts = title.split(/ vs\.? | gegen | - | : /i);
-            if (parts.length >= 2) {
-              homeTeam = parts[0].trim();
-              awayTeam = parts[1].trim();
+            if(bounds.length > 0) map.fitBounds(bounds, { padding: [40, 40] });
+        }
+
+        function renderMatches() {
+            // Nach Votes sortieren (höchste oben)
+            matches.sort((a, b) => b.votes - a.votes);
+
+            const container = document.getElementById('matchesContainer');
+            container.innerHTML = '';
+
+            if (matches.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Noch keine Spiele geladen.</p>';
+                return;
             }
-          }
 
-          const payload = {
-            action: "addParsedMatch",
-            league, homeTeam, homeLogo, awayTeam, awayLogo,
-            timeText, dateText, locationName, address, lat, lng
-          };
+            matches.forEach(match => {
+                // Route wird direkt für die Anfahrt per Fahrrad konfiguriert (&dirflg=b)
+                const destination = match.address || match.locationName || `${match.lat},${match.lng}`;
+                const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}&dirflg=b`;
 
-          await fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
+                const wrapper = document.createElement('div');
+                wrapper.className = 'match-card-wrapper';
 
-          alert("Spiel erfolgreich hinzugefügt!");
-          urlInput.value = '';
-          loadMatches();
+                wrapper.innerHTML = `
+                    <div class="badge-vote-container">
+                        <div class="status-badge">
+                            🔥 ${match.votes} VOTES
+                        </div>
+                    </div>
 
-        } catch (err) {
-          console.error(err);
-          alert("Fehler beim Auslesen des Links.");
-        } finally {
-          submitBtn.disabled = false;
-          submitBtn.innerText = 'Laden';
+                    <div class="match-card">
+                        <div class="team home">
+                            <img src="${match.homeLogo || fallbackLogo}" class="team-logo" referrerpolicy="no-referrer">
+                            <span class="team-name">${match.homeTeam}</span>
+                        </div>
+
+                        <div class="match-center">
+                            <span class="league-name">${match.league}</span>
+                            <span class="match-time">${match.timeText}</span>
+                            <span class="match-date">${match.dateText}</span>
+                            
+                            <div class="location-info" title="${match.locationName}">
+                                <span>📍 ${match.locationName}</span>
+                            </div>
+
+                            <div class="card-actions">
+                                <button class="action-btn btn-upvote ${match.userVoted ? 'voted' : ''}" onclick="toggleVote('${match.id}')">
+                                    👍 <span>${match.userVoted ? 'Gevotet' : 'Upvote'}</span>
+                                </button>
+                                <a href="${googleMapsUrl}" target="_blank" class="action-btn btn-route">
+                                    🧭 <span>Route</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="team away">
+                            <img src="${match.awayLogo || fallbackLogo}" class="team-logo" referrerpolicy="no-referrer">
+                            <span class="team-name">${match.awayTeam}</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(wrapper);
+            });
+
+            updateMap();
         }
-      });
-    });
 
-    async function loadMatches() {
-      const container = document.getElementById('matchesContainer');
-      try {
-        const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getMatches`);
-        const matches = await res.json();
-
-        if (!matches || matches.length === 0) {
-          container.innerHTML = '<p style="text-align:center; color: var(--text-muted);">Keine anstehenden Spiele gefunden.</p>';
-          return;
+        // Daten vom Google Apps Script fetchen
+        async function fetchMatches() {
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=getMatches`);
+                const data = await response.json();
+                
+                // Lokalen userVoted Status beibehalten, falls vorhanden
+                matches = data.map(serverMatch => {
+                    const localMatch = matches.find(m => m.id === serverMatch.id);
+                    return {
+                        ...serverMatch,
+                        userVoted: localMatch ? localMatch.userVoted : false
+                    };
+                });
+                
+                renderMatches();
+            } catch (error) {
+                console.error("Fehler beim Laden der Spiele:", error);
+            }
         }
 
-        container.innerHTML = matches.map(m => `
-          <div class="match-card">
-            <div class="votes-badge">🔥 ${m.votes || 0} VOTES</div>
-            <div class="league-name">${m.league}</div>
-            <div class="match-main">
-              <div class="team">
-                ${m.homeLogo ? `<img src="${m.homeLogo}" style="width:40px;height:40px;object-fit:contain;">` : `<div class="shield-icon">🛡️</div>`}
-                <span>${m.homeTeam}</span>
-              </div>
-              <div class="match-info">
-                <h2>${m.timeText}</h2>
-                <p>${m.dateText}</p>
-                <p class="location">📍 ${m.locationName}</p>
-              </div>
-              <div class="team">
-                ${m.awayLogo ? `<img src="${m.awayLogo}" style="width:40px;height:40px;object-fit:contain;">` : `<div class="shield-icon">🛡️</div>`}
-                <span>${m.awayTeam}</span>
-              </div>
-            </div>
-            <div class="actions">
-              <button onclick="voteMatch('${m.id}', 'up')" class="btn-action">👍 Upvote</button>
-              <a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(m.locationName + ' ' + m.address)}" target="_blank" class="btn-action">🚴 Route</a>
-            </div>
-          </div>
-        `).join('');
+        // Neues Spiel via FuPa-Link hinzufügen
+        loadBtn.addEventListener('click', async () => {
+            const url = searchInput.value.trim();
+            if (!url) return;
 
-      } catch (err) {
-        console.error(err);
-        container.innerHTML = '<p style="text-align:center; color: var(--text-muted);">Konnte Spiele nicht laden.</p>';
-      }
-    }
-
-    async function voteMatch(id, type) {
-      try {
-        await fetch(GOOGLE_SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id, type })
+            loadBtn.textContent = "Lädt...";
+            loadBtn.style.opacity = "0.7";
+            
+            try {
+                await fetch(`${SCRIPT_URL}?action=addFuPaMatch&url=${encodeURIComponent(url)}`);
+                searchInput.value = "";
+                await fetchMatches(); // Nach dem Hinzufügen Liste neu laden
+            } catch (error) {
+                console.error("Fehler beim Hinzufügen:", error);
+                alert("Fehler beim Laden des FuPa-Links.");
+            } finally {
+                loadBtn.textContent = "Laden";
+                loadBtn.style.opacity = "1";
+            }
         });
-        setTimeout(loadMatches, 500);
-      } catch (err) {
-        console.error(err);
-      }
-    }
-  </script>
+
+        // Voting Logik mit Backend-Synchronisation
+        async function toggleVote(id) {
+            const match = matches.find(m => m.id === id);
+            if(!match) return;
+
+            const isVotingUp = !match.userVoted;
+            
+            // Optimistisches UI-Update (direkt anzeigen, bevor der Server antwortet)
+            match.userVoted = isVotingUp;
+            match.votes += isVotingUp ? 1 : -1;
+            renderMatches();
+
+            try {
+                // Post Request ans Apps Script als text/plain um CORS Preflight zu vermeiden
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        id: id,
+                        type: isVotingUp ? 'up' : 'down'
+                    })
+                });
+            } catch(e) {
+                console.error("Fehler beim Voten:", e);
+                // Bei Fehler das UI wieder zurücksetzen
+                match.userVoted = !isVotingUp;
+                match.votes += isVotingUp ? -1 : 1;
+                renderMatches();
+            }
+        }
+
+        window.onload = () => {
+            initMap();
+            if (SCRIPT_URL === "DEINE_WEB_APP_URL_HIER_EINTRAGEN") {
+                document.getElementById('matchesContainer').innerHTML = '<p style="color: #ff4444; text-align: center;">Bitte trage zuerst deine Google Apps Script URL im Code ein!</p>';
+            } else {
+                fetchMatches();
+            }
+        };
+    </script>
 </body>
 </html>
