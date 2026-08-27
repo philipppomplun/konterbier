@@ -186,6 +186,26 @@
             z-index: 2;
         }
 
+        .badge-route-container {
+            position: absolute;
+            top: -12px;
+            right: 24px;
+            z-index: 2;
+            text-decoration: none;
+        }
+
+        .route-badge {
+            background: #17261c;
+            color: var(--text-primary);
+            border: 1px solid var(--border-card);
+            transition: all 0.2s ease;
+        }
+
+        .route-badge:hover {
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+
         .status-badge {
             background: #17261c;
             color: var(--accent-lime);
@@ -546,7 +566,6 @@
         }
 
         function renderMatches() {
-            // Nach Votes sortieren (höchste oben)
             matches.sort((a, b) => b.votes - a.votes);
 
             const container = document.getElementById('matchesContainer');
@@ -558,7 +577,6 @@
             }
 
             matches.forEach(match => {
-                // Route wird direkt für die Anfahrt per Fahrrad konfiguriert (&dirflg=b)
                 const destination = match.address || match.locationName || `${match.lat},${match.lng}`;
                 const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}&dirflg=b`;
 
@@ -572,6 +590,13 @@
                         </div>
                     </div>
 
+                    <!-- NEU: Route-Button als Badge oben rechts -->
+                    <a href="${googleMapsUrl}" target="_blank" class="badge-route-container" title="Route starten">
+                        <div class="status-badge route-badge">
+                            🧭 Route
+                        </div>
+                    </a>
+
                     <div class="match-card">
                         <div class="team home">
                             <img src="${match.homeLogo || fallbackLogo}" class="team-logo" referrerpolicy="no-referrer">
@@ -580,21 +605,17 @@
 
                         <div class="match-center">
                             <span class="league-name">${match.league}</span>
-                            <!-- HIER GEÄNDERT: Datum und CSS-Klassen getauscht -->
                             <span class="match-time">${match.dateText}</span>
                             <span class="match-date">${match.timeText}</span>
                             
                             <div class="location-info" title="${match.locationName}">
                                 <span>📍 ${match.locationName}</span>
                             </div>
-                        
+
                             <div class="card-actions">
                                 <button class="action-btn btn-upvote ${match.userVoted ? 'voted' : ''}" onclick="toggleVote('${match.id}')">
                                     👍 <span>${match.userVoted ? 'Gevotet' : 'Upvote'}</span>
                                 </button>
-                                <a href="${googleMapsUrl}" target="_blank" class="action-btn btn-route">
-                                    🧭 <span>Route</span>
-                                </a>
                             </div>
                         </div>
 
